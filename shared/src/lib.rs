@@ -17,7 +17,7 @@ fn example() -> Option<(String)> {
 mod tests {
     use super::*;
 
-    #[test]
+    //#[test]
     //fn it_works() {
     //    assert_eq!(example().unwrap_or_default(), String::from("69"));
     //}
