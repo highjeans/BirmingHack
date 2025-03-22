@@ -31,3 +31,12 @@ pub struct Socials {
     pub username: String,
     pub user_id: Uuid,
 }
+
+#[derive(Queryable, Selectable, Insertable, Associations)]
+#[diesel(belongs_to(Users, foreign_key = user_id))]
+#[diesel(belongs_to(Books, foreign_key = book_id))]
+#[diesel(table_name = booklistings)]
+pub struct BookListings {
+    pub user_id: Uuid,
+    pub book_id: i64,
+}
