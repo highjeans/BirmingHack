@@ -2,7 +2,7 @@ use rocket_db_pools::diesel::prelude::*;
 use uuid::Uuid;
 use crate::schema::*;
 
-#[derive(Queryable, Insertable)]
+#[derive(Queryable, Selectable, Insertable)]
 #[diesel(table_name = users)]
 pub struct Users {
     pub id: Uuid,
