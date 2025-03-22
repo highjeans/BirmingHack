@@ -1,8 +1,10 @@
-#[macro_use] extern crate rocket;
-use rocket_db_pools::{diesel, Database};
-mod schema;
+#[macro_use]
+extern crate rocket;
+use rocket_db_pools::{Database, diesel};
 mod database_structs;
 mod routes;
+mod embeddings;
+mod schema;
 
 use routes::*;
 
@@ -17,5 +19,8 @@ fn hello() -> &'static str {
 
 #[launch]
 fn rocket() -> _ {
-    rocket::build().attach(Db::init()).mount("/", routes![hello]).mount("/users", routes![user_routes::login, user_routes::signup])
+    rocket::build()
+        .attach(Db::init())
+        .mount("/", routes![hello])
+        .mount("/users", routes![user_routes::login, user_routes::signup])
 }

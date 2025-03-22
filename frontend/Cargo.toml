@@ -5,4 +5,10 @@ edition = "2024"
 
 [dependencies]
 leptos = { version = "0.7.8", features = ["csr"] }
+leptos_router = "0.7.8"
+leptos_router_macro = "0.7.8"
 shared = { version = "0.1.0", path = "../shared" }
+
+[package.metadata.leptos]
+tailwind-version = "4.0.0"
+tailwind-input-file = "globals.css"
