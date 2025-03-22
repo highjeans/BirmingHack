@@ -1,6 +1,6 @@
+use crate::schema::*;
 use rocket_db_pools::diesel::prelude::*;
 use uuid::Uuid;
-use crate::schema::*;
 
 #[derive(Queryable, Selectable, Insertable)]
 #[diesel(table_name = users)]
@@ -11,15 +11,13 @@ pub struct Users {
     pub fullname: String,
 }
 
-#[derive(Queryable, Selectable, Insertable, Associations)]
-#[diesel(belongs_to(Users, foreign_key = user_id))]
+#[derive(Queryable, Selectable, Insertable)]
 #[diesel(table_name = books)]
 pub struct Books {
     pub isbn: i64,
     pub title: String,
     pub author: String,
     pub embeddings: String,
-    pub user_id: Uuid,
 }
 
 #[derive(Queryable, Selectable, Insertable, Associations)]

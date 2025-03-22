@@ -13,7 +13,6 @@ diesel::table! {
         title -> Text,
         author -> Text,
         embeddings -> Text,
-        user_id -> Uuid,
     }
 }
 
@@ -37,7 +36,6 @@ diesel::table! {
 
 diesel::joinable!(booklistings -> books (book_id));
 diesel::joinable!(booklistings -> users (user_id));
-diesel::joinable!(books -> users (user_id));
 diesel::joinable!(socials -> users (user_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
