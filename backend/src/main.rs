@@ -2,10 +2,13 @@
 use rocket_db_pools::{diesel, Database};
 mod schema;
 mod database_structs;
+mod routes;
+
+use routes::*;
 
 #[derive(Database)]
 #[database("postgres")]
-struct Db(diesel::PgPool);
+pub struct Db(diesel::PgPool);
 
 #[get("/")]
 fn hello() -> &'static str {
@@ -14,5 +17,5 @@ fn hello() -> &'static str {
 
 #[launch]
 fn rocket() -> _ {
-    rocket::build().attach(Db::init()).mount("/", routes![hello])
+    rocket::build().attach(Db::init()).mount("/", routes![hello]).mount("/users", routes![user_routes::login, user_routes::signup])
 }

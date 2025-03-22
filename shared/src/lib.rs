@@ -1,6 +1,7 @@
 use rust_bert::pipelines::sentence_embeddings::{
     SentenceEmbeddingsBuilder, SentenceEmbeddingsModelType,
 };
+use serde::{Deserialize};
 
 fn example() -> Option<(String)> {
     let model = SentenceEmbeddingsBuilder::remote(SentenceEmbeddingsModelType::AllMiniLmL12V2)
@@ -11,6 +12,19 @@ fn example() -> Option<(String)> {
 
     let output = model.encode(&sentences).ok()?;
     Some(format!("{output:?}"))
+}
+
+#[derive(Deserialize)]
+pub struct SignupData {
+    pub username: String,
+    pub password: String,
+    pub fullname: String,
+}
+
+#[derive(Deserialize)]
+pub struct LoginData {
+    pub username: String,
+    pub password: String,
 }
 
 #[cfg(test)]
