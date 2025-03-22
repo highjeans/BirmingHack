@@ -14,12 +14,10 @@ pub fn App() -> impl IntoView {
                     <Route path=path!("/") view=routes::index::Index/>
                     <Route path=path!("/login") view=|| view! { <h1>Not yet implemented.</h1> }/>
                     <Route path=path!("/register") view=|| view! { <h1>Not yet implemented.</h1> }/>
-                    <ParentRoute path=path!("/profile") view=|| view! { <h1>Not yet implemented.</h1> }>
-                        <Route path=path!("/:id") view=|| view! { <h1>Not yet implemented.</h1> }/>
-                    </ParentRoute>
-                    <ParentRoute path=path!("/listing") view=|| view! { <h1>Not yet implemented.</h1> }>
-                        <Route path=path!("/:id") view=|| view! { <h1>Not yet implemented.</h1> }/>
-                    </ParentRoute>
+                    <Route path=path!("/profile") view=|| view! { <h1>Not yet implemented.</h1> }/>
+                    <Route path=path!("/profile/:id") view=|| view! { <h1>Not yet implemented.</h1> }/>
+                    <Route path=path!("/listing") view=|| view! { <h1>Not yet implemented.</h1> }/>
+                    <Route path=path!("/listing/:id") view=|| view! { <h1>Not yet implemented.</h1> }/>
                 </Routes>
             </main>
         </Router>
