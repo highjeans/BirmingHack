@@ -3,16 +3,16 @@
 diesel::table! {
     booklistings (user_id, book_id) {
         user_id -> Uuid,
-        book_id -> Int8,
+        book_id -> Text,
     }
 }
 
 diesel::table! {
     books (isbn) {
-        isbn -> Int8,
         title -> Text,
         author -> Text,
         embeddings -> Text,
+        isbn -> Text,
     }
 }
 
@@ -34,7 +34,6 @@ diesel::table! {
     }
 }
 
-diesel::joinable!(booklistings -> books (book_id));
 diesel::joinable!(booklistings -> users (user_id));
 diesel::joinable!(socials -> users (user_id));
 

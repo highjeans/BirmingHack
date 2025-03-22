@@ -20,7 +20,7 @@ pub struct CreateListingRequest {
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct GetListingRequest {
+pub struct GetListingResponse {
     pub isbn: String,
     pub blurb: String,
     pub author_id: String,

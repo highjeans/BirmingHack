@@ -14,7 +14,7 @@ pub struct Users {
 #[derive(Queryable, Selectable, Insertable)]
 #[diesel(table_name = books)]
 pub struct Books {
-    pub isbn: i64,
+    pub isbn: String,
     pub title: String,
     pub author: String,
     pub embeddings: String,
@@ -36,5 +36,5 @@ pub struct Socials {
 #[diesel(table_name = booklistings)]
 pub struct BookListings {
     pub user_id: Uuid,
-    pub book_id: i64,
+    pub book_id: String,
 }
