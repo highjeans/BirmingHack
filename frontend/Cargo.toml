@@ -10,5 +10,5 @@ leptos_router_macro = "0.7.8"
 shared = { version = "0.1.0", path = "../shared" }
 
 [package.metadata.leptos]
-tailwind-version = "v4.0.0"
+tailwind-version = "4.0.0"
 tailwind-input-file = "globals.css"
