@@ -24,7 +24,7 @@ pub fn App() -> impl IntoView {
                     <main class="flex flex-col flex-grow">
                         <Routes fallback=|| routes::not_found::NotFound>
                             <Route path=path!("/") view=routes::index::Index/>
-                            <Route path=path!("/login") view=|| view! { <h1>Not yet implemented.</h1> }/>
+                            <Route path=path!("/login") view=routes::login::Login/>
                             <Route path=path!("/register") view=|| view! { <h1>Not yet implemented.</h1> }/>
                             <Route path=path!("/profile") view=|| view! { <h1>Not yet implemented.</h1> }/>
                             <Route path=path!("/profile/:id") view=|| view! { <h1>Not yet implemented.</h1> }/>
