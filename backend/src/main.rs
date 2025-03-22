@@ -19,6 +19,7 @@ fn hello() -> &'static str {
 
 #[launch]
 fn rocket() -> _ {
+    std::env::var("JWT_KEY").unwrap();
     rocket::build()
         .attach(Db::init())
         .mount("/", routes![hello])
