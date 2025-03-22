@@ -1,0 +1,11 @@
+/*@import url("https://cdn.jsdelivr.net/gh/vsalvino/computer-modern@main/fonts/sans.css");*/
+/**/
+/*body {*/
+/*  font-family: "computer modern sans", sans-serif;*/
+/*}*/
+
+@import url("https://cdn.jsdelivr.net/gh/vsalvino/computer-modern@main/fonts/concrete.css");
+
+body {
+  font-family: "computer modern concrete", sans-serif;
+}
