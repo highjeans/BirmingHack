@@ -5,7 +5,7 @@
 Request:
 ```
 {
-    "email": String,
+    "username": String,
     "password": String,
     "name": String,
 }
@@ -23,7 +23,7 @@ Response 200:
 Request:
 ```
 {
-    "email": String,
+    "username": String,
     "password": String,
 }
 ```
@@ -73,7 +73,7 @@ Response 201
 Request:
 ```
 {
-    "isbn": String,
+    "isbn": Int,
     "blurb": String
 }
 ```
@@ -83,7 +83,7 @@ Request:
 Response 200:
 ```
 {
-    "isbn": String,
+    "isbn": Int,
     "title": String,
     "author": String,
     "blurb": String,
@@ -103,7 +103,7 @@ Response 200:
 
 ```
 {
-    "isbn": String,
+    "isbn": Int,
     "blurb": String,
 }
 ```

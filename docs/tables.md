@@ -10,7 +10,7 @@
 - username: String
 
 ### Book
-- isbn: String
+- isbn: Int
 - title: String
 - author: String
 - blurb: String
