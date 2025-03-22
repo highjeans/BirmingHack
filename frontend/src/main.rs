@@ -28,8 +28,8 @@ pub fn App() -> impl IntoView {
                             <Route path=path!("/register") view=|| view! { <h1>Not yet implemented.</h1> }/>
                             <Route path=path!("/profile") view=|| view! { <h1>Not yet implemented.</h1> }/>
                             <Route path=path!("/profile/:id") view=|| view! { <h1>Not yet implemented.</h1> }/>
-                            <Route path=path!("/listing") view=|| view! { <h1>Not yet implemented.</h1> }/>
-                            <Route path=path!("/listing/:id") view=|| view! { <h1>Not yet implemented.</h1> }/>
+                            <Route path=path!("/listing") view=routes::listing::NewListing/>
+                            <Route path=path!("/listing/:id") view=routes::listing::Listing/>
                         </Routes>
                     </main>
                     <footer class="my-4 text-center text-brown-600">
