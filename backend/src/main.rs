@@ -2,12 +2,15 @@
 extern crate rocket;
 use rocket_db_pools::{Database, diesel};
 mod database_structs;
+mod routes;
 mod embeddings;
 mod schema;
 
+use routes::*;
+
 #[derive(Database)]
 #[database("postgres")]
-struct Db(diesel::PgPool);
+pub struct Db(diesel::PgPool);
 
 #[get("/")]
 fn hello() -> &'static str {
@@ -19,4 +22,5 @@ fn rocket() -> _ {
     rocket::build()
         .attach(Db::init())
         .mount("/", routes![hello])
+        .mount("/users", routes![user_routes::login, user_routes::signup])
 }
