@@ -1,4 +1,6 @@
 #[macro_use] extern crate rocket;
+mod schema;
+mod database_structs;
 
 #[get("/")]
 fn hello() -> &'static str {
