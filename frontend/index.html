@@ -3,9 +3,25 @@
   <head>
     <meta charset="utf-8" />
     <link data-trunk rel="rust" data-wasm-opt="z" />
-    <!--<link data-trunk rel="tailwind-css" href="/globals.css" />-->
+    <!--<link data-trunk rel="tailwind-css" href="/tailwind.css" />-->
+    <link data-trunk rel="css" href="globals.css">
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style type="text/tailwindcss">
+      @theme {
+	  --color-brown-50: #f5f3eb;
+	  --color-brown-100: #ebe0d3;
+	  --color-brown-200: #d6c1a7;
+	  --color-brown-300: #c1a27b;
+	  --color-brown-400: #ad8350;
+	  --color-brown-500: #99662d;
+	  --color-brown-600: #805221;
+	  --color-brown-700: #663d18;
+	  --color-brown-800: #4d2a10;
+	  --color-brown-900: #331a08;
+	  --color-brown-950: #1a0d04;
+      }
+    </style>
     <title></title>
   </head>
-  <body></body>
+  <body class="bg-brown-900 text-brown-100"></body>
 </html>
