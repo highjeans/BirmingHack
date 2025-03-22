@@ -13,7 +13,6 @@
 - isbn: Int
 - title: String
 - author: String
-- blurb: String
 - embeddings: String
 
 ### BookListing
