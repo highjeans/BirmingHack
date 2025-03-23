@@ -8,7 +8,7 @@ use rocket::{
     serde::{json::Json, Deserialize, Serialize},
 };
 use rocket_db_pools::{diesel::prelude::*, Connection};
-use shared::{LoginData, LoginResponse, SignupData};
+use shared::{LoginData, LoginResponse, SignupData, SignupResponse};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 #[derive(Serialize, Deserialize)]
@@ -57,7 +57,6 @@ pub async fn signup(
         password.eq(password_hash),
         fullname.eq(details.fullname.clone()),
     );
-
     match diesel::insert_into(users)
         .values(user_details)
         .execute(&mut db)
@@ -122,15 +121,12 @@ pub async fn login(
                         &claims,
                         &EncodingKey::from_secret(std::env::var("JWT_KEY").unwrap().as_bytes()),
                     ) {
-                        Ok(jwt) => {
-                            cookies.add_private(("jwt", jwt.clone()));
-                            (
-                                Status::Ok,
-                                Json(LoginResponse {
-                                    message: "".to_string(),
-                                }),
-                            )
-                        }
+                        Ok(jwt) => (
+                            Status::Ok,
+                            Json(LoginResponse {
+                                message: jwt.clone(),
+                            }),
+                        ),
                         Err(_) => (
                             Status::InternalServerError,
                             Json(LoginResponse {

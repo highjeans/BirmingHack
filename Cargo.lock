@@ -973,11 +973,10 @@ dependencies = [
  "leptos_icons",
  "leptos_router",
  "leptos_router_macro",
- "reqwest 0.12.15",
- "serde_json",
  "reactive_stores",
  "reactive_stores_macro",
  "reqwest 0.12.15",
+ "serde_json",
  "shared",
  "wasm-bindgen",
  "wasm-bindgen-futures",
@@ -1489,7 +1488,6 @@ dependencies = [
 ]
 
 [[package]]
-<<<<<<< HEAD
 name = "icondata"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1695,8 +1693,6 @@ dependencies = [
 ]
 
 [[package]]
-=======
->>>>>>> login-signup
 name = "icu_collections"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3120,10 +3116,7 @@ dependencies = [
  "js-sys",
  "log",
  "mime",
-<<<<<<< HEAD
  "mime_guess",
-=======
->>>>>>> login-signup
  "native-tls",
  "once_cell",
  "percent-encoding",

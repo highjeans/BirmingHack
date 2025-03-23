@@ -26,5 +26,12 @@ fn rocket() -> _ {
         .attach(Db::init())
         .mount("/", routes![hello])
         .mount("/users", routes![user_routes::login, user_routes::signup])
-        .mount("/listings", routes![listing_routes::create_listing])
+        .mount(
+            "/listings",
+            routes![
+                listing_routes::create_listing,
+                listing_routes::get_listing,
+                listing_routes::delete_listing
+            ],
+        )
 }

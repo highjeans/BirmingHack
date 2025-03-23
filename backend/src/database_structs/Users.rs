@@ -70,8 +70,7 @@ impl<'r> FromRequest<'r> for Users {
     }
 }
 
-#[derive(Queryable, Selectable, Insertable, Associations)]
-#[diesel(belongs_to(Users, foreign_key = user_id))]
+#[derive(Queryable, Selectable, Insertable)]
 #[diesel(table_name = schema::books)]
 pub struct Books {
     pub isbn: String,
@@ -95,6 +94,7 @@ pub struct Socials {
 #[diesel(belongs_to(Books, foreign_key = book_id))]
 #[diesel(table_name = schema::booklistings)]
 pub struct BookListings {
+    pub id: Uuid,
     pub user_id: Uuid,
     pub book_id: String,
 }

@@ -1,11 +1,16 @@
+use crate::database_structs::Users::{BookListings, Books, Users};
 use crate::Db;
 use rocket::{http::Status, serde::json::Json};
 use rocket_db_pools::{diesel::prelude::*, Connection};
-use shared::{CreateListingRequest, GetListingResponse};
+use shared::{CreateListingRequest, CreateListingResponse, GetListingResponse};
 use uuid::Uuid;
 
 #[post("/", format = "json", data = "<details>")]
-pub async fn create_listing(details: Json<CreateListingRequest>, mut db: Connection<Db>) -> Status {
+pub async fn create_listing(
+    details: Json<CreateListingRequest>,
+    mut db: Connection<Db>,
+    user: Users,
+) -> Result<Json<CreateListingResponse>, Status> {
     use crate::schema::booklistings::dsl::*;
     use crate::schema::books::dsl::*;
 
@@ -23,14 +28,15 @@ pub async fn create_listing(details: Json<CreateListingRequest>, mut db: Connect
 
     if let Err(e) = result {
         eprintln!("Error while inserting into books: {:?}", e);
-        return Status::InternalServerError;
+        return Err(Status::InternalServerError);
     }
 
+    let listing_id = Uuid::new_v4();
     let listing = (
-        user_id.eq(Uuid::parse_str("e8580a1a-862c-488d-9ba4-f67f79233b20").unwrap()),
+        id.eq(listing_id),
+        user_id.eq(user.id),
         book_id.eq(details.isbn.clone()),
     );
-
     let result = diesel::insert_into(booklistings)
         .values(listing)
         .execute(&mut db)
@@ -38,54 +44,84 @@ pub async fn create_listing(details: Json<CreateListingRequest>, mut db: Connect
 
     if let Err(e) = result {
         eprintln!("Error while inserting into booklistings: {:?}", e);
-        return Status::InternalServerError;
+        return Err(Status::InternalServerError);
     }
 
-    Status::NoContent
+    Ok(Json(CreateListingResponse {
+        listing_id: listing_id.to_string(),
+    }))
 }
 
-#[get("/<id>")]
+#[get("/<listing_id>")]
 pub async fn get_listing(
-    id: String,
+    listing_id: String,
+    user: Users,
     mut db: Connection<Db>,
 ) -> Result<Json<GetListingResponse>, Status> {
+    println!("getting listing");
     use crate::schema::booklistings::dsl::*;
-    use crate::schema::books::dsl::*;
-    use crate::schema::users::dsl::*;
-
     let listing = booklistings
-        .filter(book_id.eq(id.clone()))
-        .first(&mut db)
-        .await;
+        .filter(id.eq(Uuid::parse_str(&listing_id).unwrap()))
+        .select(BookListings::as_select())
+        .load(&mut db)
+        .await
+        .unwrap()
+        .into_iter()
+        .nth(0);
 
     match listing {
-        Ok(listing) => {
-            // Fetch the book details based on the book_id
-            let book_details = books.filter(isbn.eq(id)).first::<Books>(&mut db).await;
+        Some(listing) => {
+            println!("listing found");
+            //let user_details = users.
+            //    .filter(id.eq(listing.user_id))
+            //    .select(Books::as_select())
+            //    .load(&mut db)
+            //    .await
+            //    .unwrap()
+            //    .into_iter()
+            //    .nth(0);
 
-            match book_details {
-                Ok(book) => {
-                    // You may also want to fetch the user details, but it's not needed in the current example
-                    Ok(Json(GetListingResponse {
-                        isbn: book.isbn,
-                        title: book.title,
-                        author: book.author,
-                        user_id: listing.user_id,
-                        user_fullname: listing.user_fullname,
-                    }))
-                }
-                Err(_) => Err(Status::NotFound),
-            }
+            use crate::schema::books::dsl::*;
+            let book_details = books
+                .filter(isbn.eq(listing.book_id))
+                .select(Books::as_select())
+                .load(&mut db)
+                .await
+                .unwrap()
+                .into_iter()
+                .nth(0)
+                .unwrap();
+
+            use crate::schema::users::dsl::*;
+            let user_details = users
+                .filter(id.eq(listing.user_id))
+                .select(Users::as_select())
+                .load(&mut db)
+                .await
+                .unwrap()
+                .into_iter()
+                .nth(0)
+                .unwrap();
+
+            Ok(Json(GetListingResponse {
+                isbn: book_details.isbn,
+                title: book_details.title,
+                author: book_details.author,
+                user_id: user_details.id.to_string(),
+                user_fullname: user_details.fullname,
+            }))
         }
-        Err(_) => Err(Status::NotFound),
+        None => {
+            eprintln!("listing not found");
+            Err(Status::NotFound)
+        }
     }
 }
 
 #[delete("/<id>")]
 pub async fn delete_listing(id: String, mut db: Connection<Db>) -> Status {
     use crate::schema::booklistings::dsl::*;
-
-    let result = diesel::delete(booklistings.filter(book_id.eq(id)))
+    let result = diesel::delete(booklistings.filter(id.eq(id)))
         .execute(&mut db)
         .await;
 

@@ -30,6 +30,11 @@ pub struct CreateListingRequest {
 }
 
 #[derive(Serialize, Deserialize)]
+pub struct CreateListingResponse {
+    pub listing_id: String,
+}
+
+#[derive(Serialize, Deserialize)]
 pub struct GetListingResponse {
     pub isbn: String,
     pub title: String,

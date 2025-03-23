@@ -4,6 +4,7 @@ diesel::table! {
     booklistings (user_id, book_id) {
         user_id -> Uuid,
         book_id -> Text,
+        id -> Uuid,
     }
 }
 
@@ -37,9 +38,4 @@ diesel::table! {
 diesel::joinable!(booklistings -> users (user_id));
 diesel::joinable!(socials -> users (user_id));
 
-diesel::allow_tables_to_appear_in_same_query!(
-    booklistings,
-    books,
-    socials,
-    users,
-);
+diesel::allow_tables_to_appear_in_same_query!(booklistings, books, socials, users,);
