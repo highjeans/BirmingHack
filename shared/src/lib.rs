@@ -35,12 +35,21 @@ pub struct CreateListingResponse {
 }
 
 #[derive(Serialize, Deserialize)]
+pub struct GetSimilarListingResponse {
+    pub id: String,
+    pub isbn: String,
+    pub title: String,
+    pub author: String,
+}
+
+#[derive(Serialize, Deserialize)]
 pub struct GetListingResponse {
     pub isbn: String,
     pub title: String,
     pub author: String,
     pub user_id: String,
     pub user_fullname: String,
+    pub similar_listings: Vec<GetSimilarListingResponse>,
 }
 
 #[derive(Serialize, Deserialize)]
