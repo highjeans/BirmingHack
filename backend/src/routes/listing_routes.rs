@@ -1,12 +1,50 @@
 use std::collections::HashMap;
 
-use crate::Db;
 use crate::database_structs::Users::{BookListings, Books, Users};
+use crate::Db;
 use base64::{decode, encode};
+use rocket::serde::json::serde_json;
+use rocket::serde::Deserialize;
 use rocket::{http::Status, serde::json::Json};
-use rocket_db_pools::{Connection, diesel::prelude::*};
+use rocket_db_pools::{diesel::prelude::*, Connection};
 use shared::{CreateListingRequest, CreateListingResponse, ExtractResponse, GetListingResponse};
 use uuid::Uuid;
+
+#[derive(Deserialize, Debug)]
+struct Data {
+    details: Option<BookDetails>,
+}
+
+#[derive(Deserialize, Debug)]
+struct BookDetails {
+    title: Option<String>,
+    author: Option<Vec<String>>,
+}
+
+fn extract_title(book_details: &Data) -> String {
+    println!("{:?}", book_details);
+    book_details
+        .details
+        .as_ref()
+        .unwrap()
+        .title
+        .as_ref()
+        .unwrap_or(&"Title not available".to_string())
+        .to_string()
+}
+
+fn extract_author(book_details: &Data) -> String {
+    println!("{:?}", book_details);
+    book_details
+        .details
+        .as_ref()
+        .unwrap()
+        .author
+        .as_ref()
+        .and_then(|authors| authors.get(0)) // Get the first author
+        .unwrap_or(&"Author not available".to_string())
+        .to_string()
+}
 
 #[post("/", format = "json", data = "<details>")]
 pub async fn create_listing(
@@ -22,15 +60,45 @@ pub async fn create_listing(
     let mut s: Vec<String> = Vec::new();
     for (i, val) in other_embeddings.iter().enumerate() {
         if i > 0 {
-            s.push(String::from(" "))
+            s.push(String::from(" "));
         }
         s.push(format!("{}", val));
     }
 
+    println!(
+        "https://openlibrary.org/api/books?bibkeys=ISBN:{}&jscmd=details&format=json",
+        details.isbn,
+    );
+
+    let response = reqwest::Client::new()
+        .get(format!(
+            "https://openlibrary.org/api/books?bibkeys=ISBN:{}&jscmd=details&format=json",
+            details.isbn
+        ))
+        .send()
+        .await
+        .unwrap()
+        .text()
+        .await
+        .unwrap();
+
+    println!("{}", response); // Print the raw response to debug
+
+    let other_isbn: std::collections::HashMap<String, Data> =
+        serde_json::from_str(&response).unwrap();
+
+    println!("parsed: {:?}", other_isbn);
+
+    let book_details = other_isbn.get(&format!("ISBN:{}", details.isbn)).unwrap();
+    let the_title = extract_title(book_details);
+    let the_author = extract_author(book_details);
+
+    println!("title: {:?}, author: {:?}", the_title, the_author);
+
     let book = (
         isbn.eq(details.isbn.clone()),
-        title.eq(""),
-        author.eq(""),
+        title.eq(the_title),
+        author.eq(the_author),
         embeddings.eq(s.concat()),
     );
 
@@ -50,6 +118,7 @@ pub async fn create_listing(
         user_id.eq(user.id),
         book_id.eq(details.isbn.clone()),
     );
+
     let result = diesel::insert_into(booklistings)
         .values(listing)
         .execute(&mut db)

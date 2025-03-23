@@ -206,9 +206,11 @@ dependencies = [
  "diesel",
  "dotenv",
  "jsonwebtoken",
+ "reqwest 0.12.15",
  "rocket",
  "rocket_db_pools",
  "rust-bert",
+ "serde",
  "shared",
  "uuid",
 ]
