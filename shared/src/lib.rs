@@ -34,7 +34,7 @@ pub struct CreateListingResponse {
     pub listing_id: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct GetSimilarListingResponse {
     pub id: String,
     pub isbn: String,
@@ -42,7 +42,7 @@ pub struct GetSimilarListingResponse {
     pub author: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct GetListingResponse {
     pub isbn: String,
     pub title: String,

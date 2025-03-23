@@ -114,19 +114,6 @@ pub fn NewListing() -> impl IntoView {
     }
 }
 
-async fn fetch_listing(id: String) -> Result<GetListingResponse, String> {
-    let client = Client::new();
-    let url = format!("http://localhost:8080/listings/{}", &id);
-    Ok(client
-        .get(&url)
-        .send()
-        .await
-        .unwrap()
-        .json::<GetListingResponse>()
-        .await
-        .unwrap())
-}
-
 #[component]
 pub fn Listing() -> impl IntoView {
     let nav = use_navigate();
@@ -135,55 +122,35 @@ pub fn Listing() -> impl IntoView {
 
     let auth_state = expect_context::<Store<AuthState>>();
 
-    //view! {
-    //    <div class="flex items-center justify-center flex-grow">
-    //        <Await
-    //            future=fetch_listing(id.clone())
-    //            let:data
-    //        >
-    //            <h1>"hi"</h1>
-    //        </Await>
-    //    </div>
-    //}
+    let fetch_listing = async move |id: String, jwt: String| -> GetListingResponse {
+        let client = Client::new();
+        let url = format!("http://localhost:8080/listings/{}", &id);
+        client
+            .get(&url)
+            .header("Authorization", jwt)
+            .send()
+            .await
+            .unwrap()
+            .json::<GetListingResponse>()
+            .await
+            .unwrap()
+    };
 
-    let data = GetListingResponse {
-        isbn: "123".to_string(),
-        title: "Book title".to_string(),
-        author: "Author's name".to_string(),
-        user_fullname: "Freddy Snow".to_string(),
-        user_id: "123".to_string(),
-        similar_listings: vec![
-            GetSimilarListingResponse {
-                id: "uhhh".to_string(),
-                isbn: "123".to_string(),
-                title: "A similar book".to_string(),
-                author: "another author".to_string(),
-            },
-            GetSimilarListingResponse {
-                id: "uhhh".to_string(),
-                isbn: "123".to_string(),
-                title: "A similar book".to_string(),
-                author: "another author".to_string(),
-            },
-            GetSimilarListingResponse {
-                id: "uhhh".to_string(),
-                isbn: "123".to_string(),
-                title: "A similar book".to_string(),
-                author: "another author".to_string(),
-            },
-            GetSimilarListingResponse {
-                id: "uhhh".to_string(),
-                isbn: "123".to_string(),
-                title: "A similar book".to_string(),
-                author: "another author".to_string(),
-            },
-            GetSimilarListingResponse {
-                id: "uhhh".to_string(),
-                isbn: "123".to_string(),
-                title: "A similar book".to_string(),
-                author: "another author".to_string(),
-            },
-        ],
+    let listings =
+        LocalResource::new(move || fetch_listing(id.clone(), auth_state.read().jwt.clone()));
+
+    let data = move || {
+        listings
+            .get()
+            .map(|val| val.take())
+            .unwrap_or(GetListingResponse {
+                isbn: "".to_string(),
+                title: "".to_string(),
+                author: "".to_string(),
+                user_id: "".to_string(),
+                user_fullname: "".to_string(),
+                similar_listings: Vec::new(),
+            })
     };
 
     let delete = async move |jwt: String, listingId: String| {
@@ -201,42 +168,49 @@ pub fn Listing() -> impl IntoView {
 
         nav("/", Default::default());
     };
-
     view! {
-        <div class="flex flex-col flex-grow my-8">
-            <div class="flex flex-row items-center justify-between">
-                <h1 class="text-2xl text-brown-200">{data.title}</h1>
-                <div class="flex flex-col items-end gap-1">
-                    <button
-                        on:click = move |_| {
-                            let id_clone = id.clone();
-                            let delete_clone = delete.clone();
-                            let jwt = auth_state.get().jwt;
-                            spawn_local(async move { delete_clone(jwt, id_clone).await; } );
-                        }
-                        class="flex flex-row gap-2 items-center block px-4 py-1 bg-brown-200 rounded-sm text-stone-900 hover:bg-brown-100 transition-colors cursor-pointer text-sm"
-                    >
-                        <Icon icon={i::BsTrashFill} {..} style="color: var(--color-stone-900)"/>
-                        "Delist"
-                    </button>
-                    <span class="text-brown-500">"isbn: "{data.isbn}</span>
-                </div>
-            </div>
-            <h2 class="text-lg text-brown-300">"By "{data.author}</h2>
-            <h2 class="text-lg mt-2 text-brown-300">"Listed for exchange by "<a class="text-brown-400 hover:text-brown-300 hover:underline" href={format!("/profiles/{}", &data.user_id)}>{data.user_fullname}</a></h2>
-            <h2 class="text-xl text-brown-200 mt-8 mb-2">"Other similar books you might be interested in"</h2>
-            <div class="flex flex-row flex-wrap gap-2">
-                {data.similar_listings.iter().map(|listing| view! {
-                    <div class="p-8 bg-brown-800 flex-grow border border-brown-700 hover:bg-brown-700 cursor-pointer transition-colors">
-                        <h1 class="text-brown-100 font-bold">{listing.title.clone()}</h1>
-                        <h2 class="text-brown-200 font-bold">"By "{listing.author.clone()}</h2>
-                        <a href={format!("/listing/{}", listing.id)} class="flex flex-row gap-2 mt-4 items-center">
-                            <h3 class="text-brown-300">"Go to listing"</h3>
-                            <Icon icon={i::FiExternalLink} {..} style="color: var(--color-brown-300)"/>
-                        </a>
+        <div class="flex items-center justify-center flex-grow">
+            <Show
+                when=move || listings.read().is_some()
+            >
+                <div class="flex flex-col flex-grow my-8">
+                        <div class="flex flex-row items-center justify-between">
+                            <h1 class="text-2xl text-brown-200">{data().title}</h1>
+                            <div class="flex flex-col items-end gap-1">
+                                <button
+                                    on:click = move |_| {
+                                        let id_clone = id.clone();
+                                        let delete_clone = delete.clone();
+                                        let jwt = auth_state.get().jwt;
+                                        spawn_local(async move { delete_clone(jwt, id_clone).await; } );
+                                    }
+                                    class="flex flex-row gap-2 items-center block px-4 py-1 bg-brown-200 rounded-sm text-stone-900 hover:bg-brown-100 transition-colors cursor-pointer text-sm"
+                                >
+                                    <Icon icon={i::BsTrashFill} {..} style="color: var(--color-stone-900)"/>
+                                    "Delist"
+                                </button>
+                                <span class="text-brown-500">"isbn: "{data().isbn}</span>
+                            </div>
+                        </div>
+                        <h2 class="text-lg text-brown-300">"By "{data().author}</h2>
+                        <h2 class="text-lg mt-2 text-brown-300">"Listed for exchange by "<a class="text-brown-400 hover:text-brown-300 hover:underline" href={format!("/profiles/{}", &data().user_id)}>{data().user_fullname}</a></h2>
+
+                        <h2 class="text-xl text-brown-200 mt-8 mb-2">"Other similar books you might be interested in"</h2>
+                        <div class="flex flex-row flex-wrap gap-2">
+                            {data().similar_listings.iter().map(|listing| view! {
+                                <div class="p-8 bg-brown-800 flex-grow border border-brown-700 hover:bg-brown-700 cursor-pointer transition-colors">
+                                    <h1 class="text-brown-100 font-bold">{listing.title.clone()}</h1>
+                                    <h2 class="text-brown-200 font-bold">"By "{listing.author.clone()}</h2>
+                                    <a href={format!("/listing/{}", listing.id)} class="flex flex-row gap-2 mt-4 items-center">
+                                        <h3 class="text-brown-300">"Go to listing"</h3>
+                                        <Icon icon={i::FiExternalLink} {..} style="color: var(--color-brown-300)"/>
+                                    </a>
+                                </div>
+                            }).collect::<Vec<_>>()}
+                        </div>
                     </div>
-                }).collect::<Vec<_>>()}
-            </div>
+
+            </Show>
         </div>
     }
 }

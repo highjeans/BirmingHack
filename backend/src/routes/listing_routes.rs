@@ -60,14 +60,14 @@ pub async fn create_listing(
     use crate::schema::booklistings::dsl::*;
     use crate::schema::books::dsl::*;
 
-    let other_embeddings = produce_embeddings(&details.blurb).unwrap_or_default();
+    //let other_embeddings = produce_embeddings(&details.blurb).unwrap_or_default();
     let mut s: Vec<String> = Vec::new();
-    for (i, val) in other_embeddings.iter().enumerate() {
-        if i > 0 {
-            s.push(String::from(" "));
-        }
-        s.push(format!("{}", val));
-    }
+    //for (i, val) in other_embeddings.iter().enumerate() {
+    //    if i > 0 {
+    //        s.push(String::from(" "));
+    //    }
+    //    s.push(format!("{}", val));
+    //}
 
     println!(
         "https://openlibrary.org/api/books?bibkeys=ISBN:{}&jscmd=details&format=json",
