@@ -1,9 +1,10 @@
 #[macro_use]
 extern crate rocket;
-use rocket_db_pools::{Database, diesel};
+use dotenv::dotenv;
+use rocket_db_pools::{diesel, Database};
 mod database_structs;
-mod routes;
 mod embeddings;
+mod routes;
 mod schema;
 
 use routes::*;
@@ -19,9 +20,18 @@ fn hello() -> &'static str {
 
 #[launch]
 fn rocket() -> _ {
+    dotenv().ok();
     std::env::var("JWT_KEY").unwrap();
     rocket::build()
         .attach(Db::init())
         .mount("/", routes![hello])
         .mount("/users", routes![user_routes::login, user_routes::signup])
+        .mount(
+            "/listings",
+            routes![
+                listing_routes::create_listing,
+                listing_routes::get_listing,
+                listing_routes::delete_listing
+            ],
+        )
 }
