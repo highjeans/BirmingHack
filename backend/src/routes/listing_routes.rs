@@ -8,8 +8,6 @@ use rocket::serde::json::serde_json;
 use rocket::serde::Deserialize;
 use rocket::{http::Status, serde::json::Json};
 use rocket_db_pools::{diesel::prelude::*, Connection};
-use rocket_db_pools::{diesel::prelude::*, Connection};
-use shared::{CreateListingRequest, CreateListingResponse, ExtractResponse, GetListingResponse};
 use shared::{
     CreateListingRequest, CreateListingResponse, ExtractResponse, GetListingResponse,
     GetSimilarListingResponse,
