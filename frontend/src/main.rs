@@ -33,7 +33,7 @@ pub fn App() -> impl IntoView {
                         <Routes fallback=|| routes::not_found::NotFound>
                             <Route path=path!("/") view=routes::index::Index/>
                             <Route path=path!("/login") view=routes::login::Login/>
-                            <Route path=path!("/register") view=|| view! { <h1>Not yet implemented.</h1> }/>
+                            <Route path=path!("/register") view=routes::signup::Signup/>
                             <Route path=path!("/profile") view=|| view! { <h1>Not yet implemented.</h1> }/>
                             <Route path=path!("/profile/:id") view=|| view! { <h1>Not yet implemented.</h1> }/>
                             <Route path=path!("/listing") view=|| view! { <h1>Not yet implemented.</h1> }/>

@@ -17,3 +17,8 @@ pub struct LoginData {
 pub struct LoginResponse {
     pub message: String,
 }
+
+#[derive(Deserialize, Serialize)]
+pub struct SignupResponse {
+    pub message: String,
+}

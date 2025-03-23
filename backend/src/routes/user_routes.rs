@@ -2,7 +2,7 @@ use bcrypt::BcryptError;
 use rocket::http::CookieJar;
 use rocket::{serde::{Deserialize, Serialize, json::Json}, http::Status};
 use rocket_db_pools::{Connection, diesel::prelude::*};
-use shared::{LoginData, LoginResponse, SignupData};
+use shared::{LoginData, LoginResponse, SignupData, SignupResponse};
 use jsonwebtoken::{encode, Header, EncodingKey};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use crate::database_structs::Users::Users;
@@ -16,11 +16,22 @@ pub struct Claims {
 }
 
 #[post("/signup", format = "json", data = "<details>")]
-pub async fn signup(details: Json<SignupData>, mut db: Connection<Db>) -> Status {
+pub async fn signup(details: Json<SignupData>, mut db: Connection<Db>) -> (Status, Json<SignupResponse>) {
     use crate::schema::users::dsl::*;
+
+    if let Ok(user_list) = users.filter(username.eq(details.username.clone())).select(Users::as_select()).load(&mut db).await {
+        if !user_list.is_empty() {
+            return (Status::ImATeapot, Json(SignupResponse {
+                message: "You already have an account, please login.".to_string()
+            }))
+        }
+    };
+
     let password_hash_res = bcrypt::hash(details.password.clone(), 10);
     if let Err(_) = password_hash_res {
-        return Status::InternalServerError;
+        return (Status::InternalServerError, Json(SignupResponse {
+            message: "Failed to hash the password".to_string()
+        }));
     }
     let password_hash = password_hash_res.unwrap();
     let user_details = (
@@ -30,8 +41,12 @@ pub async fn signup(details: Json<SignupData>, mut db: Connection<Db>) -> Status
         fullname.eq(details.fullname.clone())
     );
     match diesel::insert_into(users).values(user_details).execute(&mut db).await {
-        Ok(_) => Status::NoContent,
-        Err(_) => Status::InternalServerError,
+        Ok(_) => (Status::NoContent, Json(SignupResponse {
+            message: "".to_string()
+        })),
+        Err(_) => (Status::InternalServerError, Json(SignupResponse {
+            message: "Failed to create user for an unexpected reason".to_string()
+        })),
     }
 }
 
