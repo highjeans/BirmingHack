@@ -2,7 +2,7 @@ use crate::database_structs::Users::{BookListings, Books, Users};
 use crate::Db;
 use rocket::{http::Status, serde::json::Json};
 use rocket_db_pools::{diesel::prelude::*, Connection};
-use shared::{CreateListingRequest, CreateListingResponse, GetListingResponse};
+use shared::{CreateListingRequest, CreateListingResponse, ExtractResponse, GetListingResponse};
 use uuid::Uuid;
 
 #[post("/", format = "json", data = "<details>")]
@@ -72,14 +72,6 @@ pub async fn get_listing(
     match listing {
         Some(listing) => {
             println!("listing found");
-            //let user_details = users.
-            //    .filter(id.eq(listing.user_id))
-            //    .select(Books::as_select())
-            //    .load(&mut db)
-            //    .await
-            //    .unwrap()
-            //    .into_iter()
-            //    .nth(0);
 
             use crate::schema::books::dsl::*;
             let book_details = books
@@ -130,4 +122,12 @@ pub async fn delete_listing(id: String, mut db: Connection<Db>) -> Status {
         Ok(_) => Status::NoContent,
         Err(_) => Status::InternalServerError,
     }
+}
+
+#[post("/extract")]
+pub async fn extract() -> Result<Json<ExtractResponse>, Status> {
+    Ok(Json(ExtractResponse {
+        isbn: Uuid::new_v4().to_string(),
+        blurb: "This is a blurb".to_string(),
+    }))
 }

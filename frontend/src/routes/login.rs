@@ -1,3 +1,4 @@
+use crate::AuthState;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos::IntoView;
@@ -5,8 +6,6 @@ use reactive_stores::Store;
 use reqwest::Client;
 use shared::LoginData;
 use shared::LoginResponse;
-
-use crate::AuthState;
 
 #[component]
 pub fn Login() -> impl IntoView {
@@ -18,10 +17,12 @@ pub fn Login() -> impl IntoView {
 
     let submitForm = async move |username: String, password: String| {
         let client = Client::builder().build().unwrap();
-        let res = client.post("http://localhost:8000/users/login").json(&LoginData {
-            username,
-            password,
-        }).send().await.unwrap();
+        let res = client
+            .post("http://localhost:8000/users/login")
+            .json(&LoginData { username, password })
+            .send()
+            .await
+            .unwrap();
         if res.status() == 200 {
             let jwt = res.json::<LoginResponse>().await.unwrap().message;
             auth_state.write().jwt = jwt;

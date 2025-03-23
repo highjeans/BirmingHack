@@ -31,7 +31,8 @@ fn rocket() -> _ {
             routes![
                 listing_routes::create_listing,
                 listing_routes::get_listing,
-                listing_routes::delete_listing
+                listing_routes::delete_listing,
+                listing_routes::extract
             ],
         )
 }

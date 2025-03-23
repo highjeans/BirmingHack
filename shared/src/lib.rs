@@ -42,3 +42,14 @@ pub struct GetListingResponse {
     pub user_id: String,
     pub user_fullname: String,
 }
+
+#[derive(Serialize, Deserialize)]
+pub struct ExtractRequest {
+    pub image: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct ExtractResponse {
+    pub isbn: String,
+    pub blurb: String,
+}
