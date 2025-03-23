@@ -10,9 +10,9 @@ use crate::Db;
 
 #[derive(Serialize, Deserialize)]
 #[serde(crate = "rocket::serde")]
-struct Claims {
-    expires_at: u128,
-    id: String
+pub struct Claims {
+    pub expires_at: u128,
+    pub id: String
 }
 
 #[post("/signup", format = "json", data = "<details>")]
@@ -36,7 +36,7 @@ pub async fn signup(details: Json<SignupData>, mut db: Connection<Db>) -> Status
 }
 
 #[post("/login", format = "json", data = "<details>")]
-pub async fn login(details: Json<LoginData>, mut db: Connection<Db>, cookies: &CookieJar<'_>) -> (Status, Json<LoginResponse>) {
+pub async fn login(details: Json<LoginData>, mut db: Connection<Db>) -> (Status, Json<LoginResponse>) {
     use crate::schema::users::dsl::*;
     match users.filter(username.eq(details.username.clone())).select(Users::as_select()).load(&mut db).await {
         Ok(user_list) => {
@@ -59,9 +59,8 @@ pub async fn login(details: Json<LoginData>, mut db: Connection<Db>, cookies: &C
                     }
                     match encode(&Header::default(), &claims, &EncodingKey::from_secret(std::env::var("JWT_KEY").unwrap().as_bytes())) {
                         Ok(jwt) => {
-                            cookies.add_private(("jwt", jwt.clone()));
-                            (Status::NoContent, Json(LoginResponse {
-                                message: "".to_string()
+                            (Status::Ok, Json(LoginResponse {
+                                message: jwt.clone()
                             }))
                         },
                         Err(_) => {
