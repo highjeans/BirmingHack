@@ -2,10 +2,14 @@ use std::collections::HashMap;
 
 use crate::Db;
 use crate::database_structs::Users::{BookListings, Books, Users};
+use crate::embeddings::cosine_similarity;
 use base64::{decode, encode};
 use rocket::{http::Status, serde::json::Json};
 use rocket_db_pools::{Connection, diesel::prelude::*};
-use shared::{CreateListingRequest, CreateListingResponse, ExtractResponse, GetListingResponse};
+use shared::{
+    CreateListingRequest, CreateListingResponse, ExtractResponse, GetListingResponse,
+    GetSimilarListingResponse,
+};
 use uuid::Uuid;
 
 #[post("/", format = "json", data = "<details>")]
@@ -94,7 +98,7 @@ pub async fn get_listing(
                 .await
                 .unwrap()
                 .into_iter()
-                .nth(0)
+                .next()
                 .unwrap();
 
             use crate::schema::users::dsl::*;
@@ -105,10 +109,10 @@ pub async fn get_listing(
                 .await
                 .unwrap()
                 .into_iter()
-                .nth(0)
+                .next()
                 .unwrap();
 
-            let all_details: Vec<Books> = books
+            let mut all_book_details: Vec<Books> = books
                 .select(Books::as_select())
                 .load(&mut db)
                 .await
@@ -116,10 +120,37 @@ pub async fn get_listing(
                 .into_iter()
                 .collect();
 
-            let book_embedding_pairs: HashMap<Books, Vec<f32>> = all_details
-                .into_iter()
-                .map(|b| (b.clone(), base64_to_embedding(&b.embeddings)))
-                .collect();
+            all_book_details.sort_by(|a, b| {
+                cosine_similarity(
+                    &base64_to_embedding(&book_details.embeddings),
+                    &base64_to_embedding(&b.embeddings),
+                )
+                .partial_cmp(&cosine_similarity(
+                    &base64_to_embedding(&book_details.embeddings),
+                    &base64_to_embedding(&a.embeddings),
+                ))
+                .unwrap()
+            });
+            all_book_details.truncate(5);
+            use crate::schema::booklistings::dsl as dsl_bl;
+            let mut all_listings = vec![];
+            for (curr_isbn, bok) in all_book_details.into_iter().map(|b| (b.isbn.clone(), b)) {
+                let listing = booklistings
+                    .select(BookListings::as_select())
+                    .filter(dsl_bl::book_id.eq(curr_isbn.clone()))
+                    .load(&mut db)
+                    .await
+                    .unwrap()
+                    .into_iter()
+                    .next()
+                    .unwrap();
+                all_listings.push(GetSimilarListingResponse {
+                    id: listing.id.to_string(),
+                    isbn: curr_isbn,
+                    title: bok.title,
+                    author: bok.author,
+                });
+            }
 
             Ok(Json(GetListingResponse {
                 isbn: book_details.isbn,
@@ -127,7 +158,7 @@ pub async fn get_listing(
                 author: book_details.author,
                 user_id: user_details.id.to_string(),
                 user_fullname: user_details.fullname,
-                similar_listings: vec![],
+                similar_listings: all_listings,
             }))
         }
         None => {
