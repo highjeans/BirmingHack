@@ -1,3 +1,6 @@
+use std::rc::Rc;
+use std::sync::Arc;
+
 use crate::AuthState;
 use base64::encode;
 use icondata as i;
@@ -6,6 +9,7 @@ use leptos::prelude::*;
 use leptos::task::spawn_local;
 use leptos_icons::Icon;
 use leptos_router::hooks::{use_navigate, use_params_map};
+use leptos_router::NavigateOptions;
 use reactive_stores::Store;
 use reqwest::Client;
 use shared::*;
@@ -117,8 +121,10 @@ pub fn NewListing() -> impl IntoView {
 #[component]
 pub fn Listing() -> impl IntoView {
     let nav = use_navigate();
+    let nav = Arc::new(nav);
     let params = use_params_map();
     let id = params.read().get("id").clone().unwrap_or_default();
+    let id_clone = id.clone();
 
     let auth_state = expect_context::<Store<AuthState>>();
 
@@ -153,64 +159,59 @@ pub fn Listing() -> impl IntoView {
             })
     };
 
-    let delete = async move |jwt: String, listingId: String| {
-        let client = Client::builder().build().unwrap();
-        let res = client
-            .delete(format!("http://localhost:8000/listings/{}", listingId))
-            .header("Authorization", &jwt)
-            .send()
-            .await
-            .unwrap();
-
-        if res.status() != 204 {
-            return;
-        }
-
-        nav("/", Default::default());
-    };
     view! {
         <div class="flex items-center justify-center flex-grow">
-            <Show
-                when=move || listings.read().is_some()
-            >
                 <div class="flex flex-col flex-grow my-8">
-                        <div class="flex flex-row items-center justify-between">
-                            <h1 class="text-2xl text-brown-200">{data().title}</h1>
-                            <div class="flex flex-col items-end gap-1">
-                                <button
-                                    on:click = move |_| {
-                                        let id_clone = id.clone();
-                                        let delete_clone = delete.clone();
-                                        let jwt = auth_state.get().jwt;
-                                        spawn_local(async move { delete_clone(jwt, id_clone).await; } );
-                                    }
-                                    class="flex flex-row gap-2 items-center block px-4 py-1 bg-brown-200 rounded-sm text-stone-900 hover:bg-brown-100 transition-colors cursor-pointer text-sm"
-                                >
-                                    <Icon icon={i::BsTrashFill} {..} style="color: var(--color-stone-900)"/>
-                                    "Delist"
-                                </button>
-                                <span class="text-brown-500">"isbn: "{data().isbn}</span>
-                            </div>
-                        </div>
-                        <h2 class="text-lg text-brown-300">"By "{data().author}</h2>
-                        <h2 class="text-lg mt-2 text-brown-300">"Listed for exchange by "<a class="text-brown-400 hover:text-brown-300 hover:underline" href={format!("/profiles/{}", &data().user_id)}>{data().user_fullname}</a></h2>
+                    <div class="flex flex-row items-center justify-between">
+                        <h1 class="text-2xl text-brown-200">{data().title}</h1>
+                        <div class="flex flex-col items-end gap-1">
+                            <button
+                                on:click = move |_| {
+                                    let jwt = auth_state.get().jwt;
+                                    
+                                    let newnav = Arc::clone(&nav);
+                                    let listing_id = id_clone.clone();
+                                    spawn_local(async move {
+                                        let client = Client::builder().build().unwrap();
+                                        let res = client
+                                            .delete(format!("http://localhost:8000/listings/{}", listing_id))
+                                            .header("Authorization", &jwt)
+                                            .send()
+                                            .await
+                                            .unwrap();
 
-                        <h2 class="text-xl text-brown-200 mt-8 mb-2">"Other similar books you might be interested in"</h2>
-                        <div class="flex flex-row flex-wrap gap-2">
-                            {data().similar_listings.iter().map(|listing| view! {
-                                <div class="p-8 bg-brown-800 flex-grow border border-brown-700 hover:bg-brown-700 cursor-pointer transition-colors">
-                                    <h1 class="text-brown-100 font-bold">{listing.title.clone()}</h1>
-                                    <h2 class="text-brown-200 font-bold">"By "{listing.author.clone()}</h2>
-                                    <a href={format!("/listing/{}", listing.id)} class="flex flex-row gap-2 mt-4 items-center">
-                                        <h3 class="text-brown-300">"Go to listing"</h3>
-                                        <Icon icon={i::FiExternalLink} {..} style="color: var(--color-brown-300)"/>
-                                    </a>
-                                </div>
-                            }).collect::<Vec<_>>()}
+                                        if res.status() != 204 {
+                                            return;
+                                        }
+
+                                        newnav("/", Default::default());
+                                    });
+                                }
+                                class="flex flex-row gap-2 items-center block px-4 py-1 bg-brown-200 rounded-sm text-stone-900 hover:bg-brown-100 transition-colors cursor-pointer text-sm"
+                            >
+                                <Icon icon={i::BsTrashFill} {..} style="color: var(--color-stone-900)"/>
+                                "Delist"
+                            </button>
+                            <span class="text-brown-500">"isbn: "{data().isbn}</span>
                         </div>
                     </div>
+                    <h2 class="text-lg text-brown-300">"By "{data().author}</h2>
+                    <h2 class="text-lg mt-2 text-brown-300">"Listed for exchange by "<a class="text-brown-400 hover:text-brown-300 hover:underline" href={format!("/profiles/{}", &data().user_id)}>{data().user_fullname}</a></h2>
 
-            </Show>
+                    <h2 class="text-xl text-brown-200 mt-8 mb-2">"Other similar books you might be interested in"</h2>
+                    <div class="flex flex-row flex-wrap gap-2">
+                        {data().similar_listings.iter().map(|listing| view! {
+                            <div class="p-8 bg-brown-800 flex-grow border border-brown-700 hover:bg-brown-700 cursor-pointer transition-colors">
+                                <h1 class="text-brown-100 font-bold">{listing.title.clone()}</h1>
+                                <h2 class="text-brown-200 font-bold">"By "{listing.author.clone()}</h2>
+                                <a href={format!("/listing/{}", listing.id)} class="flex flex-row gap-2 mt-4 items-center">
+                                    <h3 class="text-brown-300">"Go to listing"</h3>
+                                    <Icon icon={i::FiExternalLink} {..} style="color: var(--color-brown-300)"/>
+                                </a>
+                            </div>
+                        }).collect::<Vec<_>>()}
+                    </div>
+                </div>
         </div>
     }
 }
