@@ -11,3 +11,4 @@ shared = { version = "0.1.0", path = "../shared" }
 diesel = { version = "2", default-features = false, features = ["uuid"]}
 uuid = "1.16.0"
 rust-bert = "0.23.0"
+jsonwebtoken = "9.3.1"

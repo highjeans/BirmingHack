@@ -7,6 +7,9 @@ edition = "2024"
 leptos = { version = "0.7.8", features = ["csr"] }
 leptos_router = "0.7.8"
 leptos_router_macro = "0.7.8"
+reactive_stores = "0.1.8"
+reactive_stores_macro = "0.1.8"
+reqwest = { version = "0.12.15", features = ["json"] }
 shared = { version = "0.1.0", path = "../shared" }
 
 [package.metadata.leptos]
