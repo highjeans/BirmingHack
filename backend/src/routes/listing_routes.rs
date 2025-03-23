@@ -127,7 +127,6 @@ pub async fn delete_listing(id: String, mut db: Connection<Db>) -> Status {
 #[post("/extract")]
 pub async fn extract() -> Result<Json<ExtractResponse>, Status> {
     Ok(Json(ExtractResponse {
-        isbn: Uuid::new_v4().to_string(),
         blurb: "This is a blurb".to_string(),
     }))
 }

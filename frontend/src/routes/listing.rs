@@ -148,10 +148,11 @@ pub fn Listing() -> impl IntoView {
         <div class="flex flex-col flex-grow my-8">
             <div class="flex flex-row items-center justify-between">
                 <h1 class="text-2xl text-brown-200">{data.title}</h1>
-                <span class="text-brown-500">ISBN: {data.isbn}</span>
+                <span class="text-brown-500">"isbn: "{data.isbn}</span>
             </div>
             <h2 class="text-lg text-brown-300">"By "{data.author}</h2>
-            <h2 class="text-lg mt-2 text-brown-400">"Listed for exchange by "<a class="hover:underline" href={format!("/profiles/{}", &data.user_id)}>{data.user_fullname}</a></h2>
+            <h2 class="text-lg mt-2 text-brown-400">"Listed for exchange by "<a class="text-brown-500 hover:text-brown-400 hover:underline" href={format!("/profiles/{}", &data.user_id)}>{data.user_fullname}</a></h2>
+            <h2 class="text-lg text-brown-200 my-2">"Other books like this one"</h2>
         </div>
     }
 }

@@ -50,6 +50,5 @@ pub struct ExtractRequest {
 
 #[derive(Serialize, Deserialize)]
 pub struct ExtractResponse {
-    pub isbn: String,
     pub blurb: String,
 }
