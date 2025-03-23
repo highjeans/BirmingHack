@@ -101,6 +101,7 @@ pub async fn get_listing(
                 author: book_details.author,
                 user_id: user_details.id.to_string(),
                 user_fullname: user_details.fullname,
+                similar_listings: vec![],
             }))
         }
         None => {
