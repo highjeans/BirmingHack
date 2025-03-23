@@ -13,17 +13,42 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 #[derive(Serialize, Deserialize)]
 #[serde(crate = "rocket::serde")]
-struct Claims {
-    expires_at: u128,
-    id: String,
+pub struct Claims {
+    pub expires_at: u128,
+    pub id: String,
 }
 
 #[post("/signup", format = "json", data = "<details>")]
-pub async fn signup(details: Json<SignupData>, mut db: Connection<Db>) -> Status {
+pub async fn signup(
+    details: Json<SignupData>,
+    mut db: Connection<Db>,
+) -> (Status, Json<SignupResponse>) {
     use crate::schema::users::dsl::*;
+
+    if let Ok(user_list) = users
+        .filter(username.eq(details.username.clone()))
+        .select(Users::as_select())
+        .load(&mut db)
+        .await
+    {
+        if !user_list.is_empty() {
+            return (
+                Status::ImATeapot,
+                Json(SignupResponse {
+                    message: "You already have an account, please login.".to_string(),
+                }),
+            );
+        }
+    };
+
     let password_hash_res = bcrypt::hash(details.password.clone(), 10);
     if let Err(_) = password_hash_res {
-        return Status::InternalServerError;
+        return (
+            Status::InternalServerError,
+            Json(SignupResponse {
+                message: "Failed to hash the password".to_string(),
+            }),
+        );
     }
     let password_hash = password_hash_res.unwrap();
     let user_details = (
@@ -32,13 +57,24 @@ pub async fn signup(details: Json<SignupData>, mut db: Connection<Db>) -> Status
         password.eq(password_hash),
         fullname.eq(details.fullname.clone()),
     );
+
     match diesel::insert_into(users)
         .values(user_details)
         .execute(&mut db)
         .await
     {
-        Ok(_) => Status::NoContent,
-        Err(_) => Status::InternalServerError,
+        Ok(_) => (
+            Status::NoContent,
+            Json(SignupResponse {
+                message: "".to_string(),
+            }),
+        ),
+        Err(_) => (
+            Status::InternalServerError,
+            Json(SignupResponse {
+                message: "Failed to create user for an unexpected reason".to_string(),
+            }),
+        ),
     }
 }
 
@@ -46,7 +82,6 @@ pub async fn signup(details: Json<SignupData>, mut db: Connection<Db>) -> Status
 pub async fn login(
     details: Json<LoginData>,
     mut db: Connection<Db>,
-    cookies: &CookieJar<'_>,
 ) -> (Status, Json<LoginResponse>) {
     use crate::schema::users::dsl::*;
     match users

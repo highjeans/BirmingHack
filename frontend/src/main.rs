@@ -1,11 +1,19 @@
 use leptos::prelude::*;
 use leptos_router::components::{Route, Router, Routes};
 use leptos_router_macro::path;
+use reactive_stores::Store;
 
 mod routes;
 
+#[derive(Clone, Debug, Default, Store)]
+pub struct AuthState {
+    pub jwt: String,
+}
+
 #[component]
 pub fn App() -> impl IntoView {
+    provide_context(Store::new(AuthState::default()));
+
     view! {
         <Router>
             <div class="flex max-w-3xl mx-auto">
@@ -20,12 +28,12 @@ pub fn App() -> impl IntoView {
                                 Register
                             </a>
                         </div>
-                    </nav>
+                </nav>
                     <main class="flex flex-col flex-grow">
                         <Routes fallback=|| routes::not_found::NotFound>
                             <Route path=path!("/") view=routes::index::Index/>
                             <Route path=path!("/login") view=routes::login::Login/>
-                            <Route path=path!("/register") view=|| view! { <h1>Not yet implemented.</h1> }/>
+                            <Route path=path!("/register") view=routes::signup::Signup/>
                             <Route path=path!("/profile") view=|| view! { <h1>Not yet implemented.</h1> }/>
                             <Route path=path!("/profile/:id") view=|| view! { <h1>Not yet implemented.</h1> }/>
                             <Route path=path!("/listing") view=routes::listing::NewListing/>

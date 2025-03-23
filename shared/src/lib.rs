@@ -8,6 +8,11 @@ pub struct SignupData {
 }
 
 #[derive(Deserialize, Serialize)]
+pub struct SignupResponse {
+    pub message: String,
+}
+
+#[derive(Deserialize, Serialize)]
 pub struct LoginData {
     pub username: String,
     pub password: String,
