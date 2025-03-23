@@ -291,7 +291,7 @@ dependencies = [
  "bcrypt",
  "diesel",
  "image",
- "lazy_static",
+ "once_cell",
  "rocket",
  "rocket_db_pools",
  "rust-bert",
