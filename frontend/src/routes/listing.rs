@@ -18,7 +18,11 @@ struct Specifics {
     isbn: String,
 }
 
-async fn upload_picture(jwt: String, input: Option<web_sys::HtmlInputElement>) -> String {
+async fn upload_picture(
+    isbn: String,
+    jwt: String,
+    input: Option<web_sys::HtmlInputElement>,
+) -> String {
     let file: File = input.unwrap().files().unwrap().get(0).unwrap();
 
     let array_buffer = JsFuture::from(file.array_buffer()).await.unwrap();
@@ -42,7 +46,7 @@ async fn upload_picture(jwt: String, input: Option<web_sys::HtmlInputElement>) -
         .post("http://localhost:8000/listings")
         .header("Authorization", &jwt)
         .json(&CreateListingRequest {
-            isbn: "dsdhfusuhf".to_string(),
+            isbn: isbn,
             blurb: resp.blurb,
         })
         .send()
@@ -86,7 +90,7 @@ pub fn NewListing() -> impl IntoView {
 
                             let nav_clone = nav.clone();
                             spawn_local(async move {
-                                let id = upload_picture(jwt, file).await;
+                                let id = upload_picture(isbn.get(), jwt, file).await;
                                 nav_clone(&("/listing/".to_string() + &id), Default::default());
                             })
                         }
@@ -98,7 +102,6 @@ pub fn NewListing() -> impl IntoView {
                                 input.click();
                             }
                         }
-                        disabled={(isbn.get().len() == 0).to_string()}
                         class="flex flex-col border border-brown-700 border-dashed rounded-sm w-full py-12 items-center cursor-pointer hover:bg-[#00000011] transition-colors disabled:cursor-not-allowed"
                     >
                         <span class="text-brown-300">"Upload a picture"</span>
