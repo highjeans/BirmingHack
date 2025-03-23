@@ -2,11 +2,11 @@ use crate::{
     routes::user_routes::Claims,
     schema::{self, users::dsl as user_table},
 };
-use jsonwebtoken::{decode, Algorithm, DecodingKey, Validation};
+use jsonwebtoken::{Algorithm, DecodingKey, Validation, decode};
 use rocket::{
+    Request,
     http::Status,
     request::{self, FromRequest},
-    Request,
 };
 use rocket_db_pools::diesel::prelude::*;
 use uuid::Uuid;
@@ -37,7 +37,7 @@ impl<'r> FromRequest<'r> for Users {
                     return request::Outcome::Error((
                         Status::Unauthorized,
                         "Invalid JWT".to_string(),
-                    ))
+                    ));
                 }
             };
             let user_id_res = Uuid::parse_str(data.claims.id.as_str());
@@ -70,7 +70,7 @@ impl<'r> FromRequest<'r> for Users {
     }
 }
 
-#[derive(Queryable, Selectable, Insertable)]
+#[derive(Queryable, Selectable, Insertable, PartialEq, Eq, Hash, Clone)]
 #[diesel(table_name = schema::books)]
 pub struct Books {
     pub isbn: String,

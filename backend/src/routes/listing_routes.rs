@@ -1,7 +1,10 @@
-use crate::database_structs::Users::{BookListings, Books, Users};
+use std::collections::HashMap;
+
 use crate::Db;
+use crate::database_structs::Users::{BookListings, Books, Users};
+use base64::{decode, encode};
 use rocket::{http::Status, serde::json::Json};
-use rocket_db_pools::{diesel::prelude::*, Connection};
+use rocket_db_pools::{Connection, diesel::prelude::*};
 use shared::{CreateListingRequest, CreateListingResponse, ExtractResponse, GetListingResponse};
 use uuid::Uuid;
 
@@ -11,14 +14,24 @@ pub async fn create_listing(
     mut db: Connection<Db>,
     user: Users,
 ) -> Result<Json<CreateListingResponse>, Status> {
+    use crate::embeddings::produce_embeddings;
     use crate::schema::booklistings::dsl::*;
     use crate::schema::books::dsl::*;
+
+    let other_embeddings = produce_embeddings(&details.blurb).unwrap_or_default();
+    let mut s: Vec<String> = Vec::new();
+    for (i, val) in other_embeddings.iter().enumerate() {
+        if i > 0 {
+            s.push(String::from(" "))
+        }
+        s.push(format!("{}", val));
+    }
 
     let book = (
         isbn.eq(details.isbn.clone()),
         title.eq(""),
         author.eq(""),
-        embeddings.eq(""),
+        embeddings.eq(s.concat()),
     );
 
     let result = diesel::insert_into(books)
@@ -67,7 +80,7 @@ pub async fn get_listing(
         .await
         .unwrap()
         .into_iter()
-        .nth(0);
+        .next();
 
     match listing {
         Some(listing) => {
@@ -95,6 +108,19 @@ pub async fn get_listing(
                 .nth(0)
                 .unwrap();
 
+            let all_details: Vec<Books> = books
+                .select(Books::as_select())
+                .load(&mut db)
+                .await
+                .unwrap()
+                .into_iter()
+                .collect();
+
+            let book_embedding_pairs: HashMap<Books, Vec<f32>> = all_details
+                .into_iter()
+                .map(|b| (b.clone(), base64_to_embedding(&b.embeddings)))
+                .collect();
+
             Ok(Json(GetListingResponse {
                 isbn: book_details.isbn,
                 title: book_details.title,
@@ -109,6 +135,10 @@ pub async fn get_listing(
             Err(Status::NotFound)
         }
     }
+}
+
+fn base64_to_embedding(s: &str) -> Vec<f32> {
+    s.split(" ").filter_map(|w| w.parse::<f32>().ok()).collect()
 }
 
 #[delete("/<id>")]
