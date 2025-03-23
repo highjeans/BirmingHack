@@ -1,5 +1,6 @@
 #[macro_use]
 extern crate rocket;
+use dotenv::dotenv;
 use rocket_db_pools::{diesel, Database};
 mod database_structs;
 mod embeddings;
@@ -19,6 +20,7 @@ fn hello() -> &'static str {
 
 #[launch]
 fn rocket() -> _ {
+    dotenv().ok();
     std::env::var("JWT_KEY").unwrap();
     rocket::build()
         .attach(Db::init())

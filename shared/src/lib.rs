@@ -27,7 +27,8 @@ pub struct CreateListingRequest {
 #[derive(Serialize, Deserialize)]
 pub struct GetListingResponse {
     pub isbn: String,
-    pub blurb: String,
-    pub author_id: String,
-    pub author_fullname: String,
+    pub title: String,
+    pub author: String,
+    pub user_id: String,
+    pub user_fullname: String,
 }
